@@ -50,6 +50,9 @@
   .pop .pn{font-weight:800;font-size:14.5px;margin-bottom:3px;color:#15253f}
   .pop .pd{color:var(--accent);font-size:11.5px;margin-bottom:7px;font-weight:700}
   .pop .pi{color:#475066;font-size:12.5px;line-height:1.65}
+  .pop .pv{margin-top:8px}
+  .pop .pv a{display:inline-block;font-size:12px;font-weight:700;color:#fff;background:var(--accent);padding:5px 10px;border-radius:7px;text-decoration:none}
+  .pop .pv a:hover{background:#155ab6}
   .pop .pa{margin-top:8px;font-size:12px;color:#b85c00;border-top:1px dashed var(--line);padding-top:7px}
   .mk{display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;border-radius:50%;box-shadow:0 2px 6px rgba(20,40,80,.35);border:2px solid #fff;font-size:14px}
   .legend{position:absolute;right:12px;bottom:22px;z-index:600;background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:11.5px;color:var(--dim);line-height:1.9;box-shadow:0 2px 10px rgba(20,40,80,.12)}
@@ -152,9 +155,22 @@ const LEGS = [
 const COLOR={air:"#6b7793",stay:"#0f9d6b",city:"#1a73e8",exp:"#d93939"};
 
 const map = L.map('map',{zoomControl:true,attributionControl:true});
-L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
-  attribution:'&copy; OpenStreetMap &copy; CARTO',subdomains:'abcd',maxZoom:19
+const baseMap = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
+  attribution:'&copy; OpenStreetMap &copy; CARTO',subdomains:'abcd',maxZoom:20
 }).addTo(map);
+const baseSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+  attribution:'Imagery &copy; Esri, Maxar, Earthstar Geographics',maxZoom:20
+});
+const satLabels = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20});
+const satellite = L.layerGroup([baseSat,satLabels]);
+L.control.layers({'地圖':baseMap,'衛星實景':satellite},null,{position:'topright',collapsed:false}).addTo(map);
+
+// Google Maps 查詢字串（用知名英文名稱 → 跳轉後有實景照片＋街景）
+const Q={TPE:"Taoyuan International Airport",IAH:"George Bush Intercontinental Airport",
+ HOTEL:"SpringHill Suites Houston Westchase",JSC:"Space Center Houston",
+ IFLY:"iFLY Indoor Skydiving Houston",UH:"SICSA University of Houston",
+ LEX:"USS Lexington Museum Corpus Christi",STAR:"SpaceX Starbase Boca Chica",
+ SPACEPORT:"Houston Spaceport",HMNS:"Houston Museum of Natural Science"};
 
 // flight line TPE-IAH (dashed)
 L.polyline([[L_.TPE.lat,L_.TPE.lng],[L_.IAH.lat,L_.IAH.lng]],
@@ -176,6 +192,7 @@ Object.entries(L_).forEach(([key,p])=>{
   const html=`<div class="pop"><div class="pn">${p.badge==='✈'||p.badge==='🏨'?p.badge+' ':'#'+p.badge+' '}${p.name}</div>`+
     (days?`<div class="pd">${days}</div>`:'')+
     `<div class="pi">${p.intro}</div>`+
+    `<div class="pv"><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(Q[key]||p.name)}" target="_blank" rel="noopener">🛰 在 Google 地圖看實景／街景 ↗</a></div>`+
     (acts?`<div class="pa">🛰 ${acts}</div>`:'')+`</div>`;
   const m=L.marker([p.lat,p.lng],{icon}).bindPopup(html).addTo(map);
   markers[key]=m;
@@ -207,8 +224,10 @@ DAYS.forEach(d=>{
   dl.appendChild(el);
 });
 
-const _v=new URLSearchParams(location.search).get('v');
-setView(_v==='all'||_v==='fly'?_v:'city');
+const _p=new URLSearchParams(location.search);
+setView(_p.get('v')==='all'||_p.get('v')==='fly'?_p.get('v'):'city');
+if(_p.get('sat')){map.removeLayer(baseMap);satellite.addTo(map);}
+if(_p.get('pop')&&markers[_p.get('pop')]){setTimeout(()=>markers[_p.get('pop')].openPopup(),500);}
 </script>
 </body>
 </html>
