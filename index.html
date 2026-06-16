@@ -72,8 +72,8 @@
       <div class="sub">2026/7/11（六）– 7/24（五）｜美國德州休士頓<br>含往返飛行共 14 天 · 課程 12 天 · NASA Space U Odyssey</div>
       <div class="stats">
         <div class="stat"><div class="n">~12,800 km</div><div class="l">桃園 ✈ 休士頓（直線）</div></div>
-        <div class="stat"><div class="n">~1,700 km</div><div class="l">地面行車總里程</div></div>
-        <div class="stat"><div class="n">1,207 km</div><div class="l">Day 9 單日遠征</div></div>
+        <div class="stat"><div class="n">~1,600 km</div><div class="l">地面行車總里程</div></div>
+        <div class="stat"><div class="n">1,195 km</div><div class="l">Day 9 單日遠征</div></div>
         <div class="stat"><div class="n">9 個</div><div class="l">主要參訪地點</div></div>
       </div>
       <div class="views">
@@ -97,33 +97,33 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const L_ = {
-  TPE:{name:"桃園國際機場 (TPE)",lat:25.0777,lng:121.2328,type:"air",badge:"✈",
+  TPE:{name:"桃園國際機場 (TPE)",lat:25.07932,lng:121.23460,type:"air",badge:"✈",
        intro:"出發與返抵地。長榮 BR52 去程／BR51 回程直飛休士頓。"},
-  IAH:{name:"休士頓 IAH 機場",lat:29.9902,lng:-95.3368,type:"air",badge:"✈",
+  IAH:{name:"休士頓 IAH 機場",lat:29.98414,lng:-95.33299,type:"air",badge:"✈",
        intro:"喬治布希國際機場，休士頓主要國際門戶，長榮直飛起降點。"},
-  HOTEL:{name:"SpringHill Suites Westchase 飯店",lat:29.7430,lng:-95.5840,type:"stay",badge:"🏨",
+  HOTEL:{name:"SpringHill Suites Westchase 飯店",lat:29.71551,lng:-95.55898,type:"stay",badge:"🏨",
        intro:"萬豪集團飯店（Westchase 區），非營地夜的住宿基地，四人一室、免費 WiFi。"},
-  JSC:{name:"NASA 詹森太空中心 / Space Center Houston",lat:29.5519,lng:-95.0937,type:"city",badge:"1",
+  JSC:{name:"NASA 詹森太空中心 / Space Center Houston",lat:29.55131,lng:-95.09740,type:"city",badge:"1",
        intro:"美國載人太空任務的任務管制中心（Mission Control）與太空人訓練基地；Space Center Houston 為其官方訪客中心。營地主課程 Space U Odyssey 在此區進行。"},
-  IFLY:{name:"iFLY Houston 室內風洞",lat:29.7847,lng:-95.5571,type:"city",badge:"2",
+  IFLY:{name:"iFLY Houston 室內風洞",lat:29.78546,lng:-95.52710,type:"city",badge:"2",
        intro:"室內跳傘垂直風洞，以強風托起身體模擬自由落體／失重，搭配重力與終端速度的 STEM 物理課。"},
-  UH:{name:"休士頓大學 SICSA 太空建築中心",lat:29.7199,lng:-95.3422,type:"city",badge:"3",
+  UH:{name:"休士頓大學 SICSA 太空建築中心",lat:29.72079,lng:-95.34406,type:"city",badge:"3",
        intro:"University of Houston 的 Sasakawa 國際太空建築中心，全美少數「太空建築／棲息地（habitat）」研究學程。"},
-  LEX:{name:"USS Lexington 航艦博物館",lat:27.8146,lng:-97.3889,type:"exp",badge:"4",
+  LEX:{name:"USS Lexington 航艦博物館",lat:27.81487,lng:-97.38871,type:"exp",badge:"4",
        intro:"二戰埃塞克斯級航空母艦，曾參與太平洋戰役，現為 Corpus Christi 灣區博物館艦，綽號「藍色幽靈」。"},
-  STAR:{name:"SpaceX Starbase (Boca Chica)",lat:25.9972,lng:-97.1566,type:"exp",badge:"5",
+  STAR:{name:"SpaceX Starbase (Boca Chica)",lat:25.99688,lng:-97.15462,type:"exp",badge:"5",
        intro:"SpaceX 位於德州最南端 Boca Chica 的 Starship 巨型火箭研發與發射基地，緊鄰墨西哥邊界。"},
-  SPACEPORT:{name:"Houston Spaceport (Ellington)",lat:29.6090,lng:-95.1590,type:"city",badge:"6",
+  SPACEPORT:{name:"Houston Spaceport (Ellington)",lat:29.60463,lng:-95.16560,type:"city",badge:"6",
        intro:"設於 Ellington 機場，是美國最早一批取得 FAA 認證的商業太空港之一；含飛行模擬器實作。"},
-  HMNS:{name:"HMNS 自然科學博物館 / Challenger Center",lat:29.7221,lng:-95.3896,type:"city",badge:"7",
+  HMNS:{name:"HMNS 自然科學博物館 / Challenger Center",lat:29.72210,lng:-95.38990,type:"city",badge:"7",
        intro:"休士頓自然科學博物館（含知名古生物廳）；館內 Challenger Learning Center 紀念挑戰者號機組，提供模擬太空任務體驗。"},
 };
 
 const DAYS = [
  {d:1,date:"7/11 六",loc:"HOTEL",ttl:"抵達休士頓 Arrival",theme:"",
-  acts:"HASSE 接機、入住報到；迎新簡報＋安全說明",leg:"IAH → 飯店 · 54 km · 約 48 min",exp:false},
+  acts:"HASSE 接機、入住報到；迎新簡報＋安全說明",leg:"IAH → 飯店 · 54 km · 約 45 min",exp:false},
  {d:2,date:"7/12 日",loc:"JSC",ttl:"進駐 NASA 營地",theme:"What Is Your Dream?",
-  acts:"開幕式；13:30 抵營、裝備檢查、營區導覽；任務簡報",leg:"飯店 → NASA 營地 · 65 km · 約 52 min",exp:false},
+  acts:"開幕式；13:30 抵營、裝備檢查、營區導覽；任務簡報",leg:"飯店 → NASA 營地 · 59 km · 約 48 min",exp:false},
  {d:3,date:"7/13 一",loc:"JSC",ttl:"Space U Odyssey",theme:"Teamwork",
   acts:"火箭工程、月面導航；精準專注訓練；EVA 團隊任務（攀岩＋高空繩索＋滑索）",leg:"NASA 營地（住宿中）",exp:false},
  {d:4,date:"7/14 二",loc:"JSC",ttl:"Space U Odyssey",theme:"Breakthrough",
@@ -133,15 +133,15 @@ const DAYS = [
  {d:6,date:"7/16 四",loc:"JSC",ttl:"NASA JSC／SCH",theme:"Passion",
   acts:"深入 JSC＋Space Center Houston；機器人工作坊；NASA 講者互動；Starship Gallery",leg:"NASA 營地（住宿中）",exp:false},
  {d:7,date:"7/17 五",loc:"IFLY",ttl:"結營＋iFLY 失重體驗",theme:"Vision",
-  acts:"頒 NASA Space U 證書；11–14 時離營；iFLY 室內漂浮＋STEM 物理",leg:"營地 → iFLY 61 km → 飯店 7 km · 約 57 min",exp:false},
+  acts:"頒 NASA Space U 證書；11–14 時離營；iFLY 室內漂浮＋STEM 物理",leg:"營地 → iFLY 58 km → 飯店 11 km · 約 59 min",exp:false},
  {d:8,date:"7/18 六",loc:"UH",ttl:"休士頓大學 SICSA 太空建築",theme:"Life Is What You Make It",
-  acts:"晨間 Quiz；參訪 SICSA；太空棲息地（Space Habitat）設計",leg:"飯店 → UH · 28 km · 約 29 min",exp:false},
+  acts:"晨間 Quiz；參訪 SICSA；太空棲息地（Space Habitat）設計",leg:"飯店 → UH · 23 km · 約 24 min",exp:false},
  {d:9,date:"7/19 日",loc:"STAR",ttl:"SpaceX Starbase 全日遠征",theme:"",
-  acts:"07:07 出發；中午 USS Lexington 航艦；下午 SpaceX Starbase；23:59 返抵",leg:"飯店→Corpus→Boca Chica→飯店 · 共 1,207 km · 開車約 15 h",exp:true},
+  acts:"07:07 出發；中午 USS Lexington 航艦；下午 SpaceX Starbase；23:59 返抵",leg:"飯店→Corpus→Boca Chica→飯店 · 共 1,195 km · 開車約 15 h",exp:true},
  {d:10,date:"7/20 一",loc:"SPACEPORT",ttl:"Houston Spaceport＋飛行模擬",theme:"Curiosity & Imagination",
-  acts:"晨間 Quiz；休士頓太空港參訪；飛行模擬器（起飛／操控／降落）",leg:"飯店 → 太空港 · 57 km · 約 52 min",exp:false},
+  acts:"晨間 Quiz；休士頓太空港參訪；飛行模擬器（起飛／操控／降落）",leg:"飯店 → 太空港 · 48 km · 約 42 min",exp:false},
  {d:11,date:"7/21 二",loc:"HMNS",ttl:"Challenger Full Mission＋HMNS",theme:"Perseverance",
-  acts:"晨間 Quiz；Challenger Center 全任務模擬（地球→月→火星）；HMNS 古生物廳",leg:"飯店 → HMNS · 25 km · 約 23 min",exp:false},
+  acts:"晨間 Quiz；Challenger Center 全任務模擬（地球→月→火星）；HMNS 古生物廳",leg:"飯店 → HMNS · 19 km · 約 18 min",exp:false},
  {d:12,date:"7/22 三",loc:"IAH",ttl:"畢業典禮與賦歸",theme:"Have a Giant Goal and Believe in It",
   acts:"晨間 Quiz；14:00 畢業典禮頒證書；16:00 前結束、送機。7/23 01:00 BR51 → 7/24 06:30 抵桃園",leg:"飯店 → IAH 送機 · 54 km",exp:false},
 ];
