@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+<title>HASSE 初階太空學校 JSS 2026 · 行程地圖</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  :root{
+    --bg:#eef1f7; --panel:#ffffff; --panel2:#f4f6fb; --line:#dce3ef;
+    --txt:#1b2333; --dim:#5d6a83; --accent:#1a73e8; --orange:#e8710a;
+    --red:#d93939; --green:#0f9d6b; --gray:#6b7793; --purple:#7b46d6;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font-family:-apple-system,"PingFang TC","Noto Sans TC",system-ui,sans-serif;background:var(--bg);color:var(--txt)}
+  #app{display:flex;height:100vh;overflow:hidden}
+  /* ---- sidebar ---- */
+  #side{width:380px;min-width:380px;height:100%;overflow-y:auto;background:var(--panel);border-right:1px solid var(--line)}
+  #side::-webkit-scrollbar{width:8px}#side::-webkit-scrollbar-thumb{background:#c7d0e0;border-radius:4px}
+  .head{padding:18px 18px 14px;background:linear-gradient(160deg,#e9f1ff,#f6f8fc);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+  .head h1{margin:0;font-size:18px;letter-spacing:.3px;color:#15253f}
+  .head .sub{color:var(--dim);font-size:12.5px;margin-top:5px;line-height:1.6}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+  .stat{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:8px 10px}
+  .stat .n{font-size:16px;font-weight:800;color:var(--accent)}
+  .stat .l{font-size:11px;color:var(--dim);margin-top:2px}
+  .views{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+  .views button{flex:1;min-width:90px;background:#fff;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:7px 4px;font-size:12px;cursor:pointer;transition:.15s}
+  .views button:hover{border-color:var(--accent);color:var(--accent)}
+  .views button.on{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700}
+  .daylist{padding:10px}
+  .day{background:#fff;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:11px 12px;margin-bottom:9px;cursor:pointer;transition:.15s;box-shadow:0 1px 2px rgba(20,40,80,.04)}
+  .day:hover{transform:translateX(2px);border-color:var(--accent);box-shadow:0 3px 10px rgba(26,115,232,.12)}
+  .day.exp{border-left-color:var(--red)}
+  .day .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .day .dno{font-weight:800;font-size:13px;color:var(--accent)}
+  .day.exp .dno{color:var(--red)}
+  .day .date{font-size:12px;color:var(--dim)}
+  .day .ttl{font-size:13.5px;font-weight:700;margin:5px 0 3px;line-height:1.45;color:#1b2333}
+  .day .theme{font-size:11.5px;color:var(--purple);font-style:italic;margin-bottom:5px}
+  .day .acts{font-size:12px;color:var(--dim);line-height:1.55}
+  .day .leg{margin-top:7px;font-size:11.5px;color:#b85c00;display:flex;align-items:center;gap:5px;flex-wrap:wrap;font-weight:600}
+  .day.exp .leg{color:var(--red)}
+  .footnote{padding:6px 16px 20px;color:#8090aa;font-size:11px;line-height:1.6}
+  /* ---- map ---- */
+  #map{flex:1;height:100%;background:#e7ecf3}
+  .leaflet-popup-content-wrapper{background:#fff;color:var(--txt);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 24px rgba(20,40,80,.18)}
+  .leaflet-popup-tip{background:#fff}
+  .leaflet-popup-content{margin:13px 15px;font-size:13px;line-height:1.6;max-width:260px}
+  .pop .pn{font-weight:800;font-size:14.5px;margin-bottom:3px;color:#15253f}
+  .pop .pd{color:var(--accent);font-size:11.5px;margin-bottom:7px;font-weight:700}
+  .pop .pi{color:#475066;font-size:12.5px;line-height:1.65}
+  .pop .pa{margin-top:8px;font-size:12px;color:#b85c00;border-top:1px dashed var(--line);padding-top:7px}
+  .mk{display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;border-radius:50%;box-shadow:0 2px 6px rgba(20,40,80,.35);border:2px solid #fff;font-size:14px}
+  .legend{position:absolute;right:12px;bottom:22px;z-index:600;background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:11.5px;color:var(--dim);line-height:1.9;box-shadow:0 2px 10px rgba(20,40,80,.12)}
+  .legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:middle}
+  @media(max-width:820px){
+    #app{flex-direction:column}
+    #side{width:100%;min-width:0;height:auto;max-height:46vh}
+    #map{height:54vh}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="side">
+    <div class="head">
+      <h1>🚀 HASSE 初階太空學校 JSS 2026</h1>
+      <div class="sub">2026/7/11（六）– 7/24（五）｜美國德州休士頓<br>含往返飛行共 14 天 · 課程 12 天 · NASA Space U Odyssey</div>
+      <div class="stats">
+        <div class="stat"><div class="n">~12,800 km</div><div class="l">桃園 ✈ 休士頓（直線）</div></div>
+        <div class="stat"><div class="n">~1,700 km</div><div class="l">地面行車總里程</div></div>
+        <div class="stat"><div class="n">1,207 km</div><div class="l">Day 9 單日遠征</div></div>
+        <div class="stat"><div class="n">9 個</div><div class="l">主要參訪地點</div></div>
+      </div>
+      <div class="views">
+        <button id="vCity" class="on">休士頓市區</button>
+        <button id="vAll">德州全程</button>
+        <button id="vFly">跨洋飛行</button>
+      </div>
+    </div>
+    <div class="daylist" id="daylist"></div>
+    <div class="footnote">距離與車程為 OSRM 實際公路路線計算（單程、不含停留）；Day 9 為來回合計。桃園↔休士頓為直線距離，實際 BR52/BR51 直飛約 14–16.5 小時。座標為各地標近似值，僅供行程概覽。</div>
+  </div>
+  <div id="map"></div>
+  <div class="legend">
+    <span><i style="background:#6b7793"></i>機場</span> &nbsp;
+    <span><i style="background:#0f9d6b"></i>住宿</span><br>
+    <span><i style="background:#1a73e8"></i>休士頓課程</span><br>
+    <span><i style="background:#d93939"></i>Day 9 遠征</span>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const L_ = {
+  TPE:{name:"桃園國際機場 (TPE)",lat:25.0777,lng:121.2328,type:"air",badge:"✈",
+       intro:"出發與返抵地。長榮 BR52 去程／BR51 回程直飛休士頓。"},
+  IAH:{name:"休士頓 IAH 機場",lat:29.9902,lng:-95.3368,type:"air",badge:"✈",
+       intro:"喬治布希國際機場，休士頓主要國際門戶，長榮直飛起降點。"},
+  HOTEL:{name:"SpringHill Suites Westchase 飯店",lat:29.7430,lng:-95.5840,type:"stay",badge:"🏨",
+       intro:"萬豪集團飯店（Westchase 區），非營地夜的住宿基地，四人一室、免費 WiFi。"},
+  JSC:{name:"NASA 詹森太空中心 / Space Center Houston",lat:29.5519,lng:-95.0937,type:"city",badge:"1",
+       intro:"美國載人太空任務的任務管制中心（Mission Control）與太空人訓練基地；Space Center Houston 為其官方訪客中心。營地主課程 Space U Odyssey 在此區進行。"},
+  IFLY:{name:"iFLY Houston 室內風洞",lat:29.7847,lng:-95.5571,type:"city",badge:"2",
+       intro:"室內跳傘垂直風洞，以強風托起身體模擬自由落體／失重，搭配重力與終端速度的 STEM 物理課。"},
+  UH:{name:"休士頓大學 SICSA 太空建築中心",lat:29.7199,lng:-95.3422,type:"city",badge:"3",
+       intro:"University of Houston 的 Sasakawa 國際太空建築中心，全美少數「太空建築／棲息地（habitat）」研究學程。"},
+  LEX:{name:"USS Lexington 航艦博物館",lat:27.8146,lng:-97.3889,type:"exp",badge:"4",
+       intro:"二戰埃塞克斯級航空母艦，曾參與太平洋戰役，現為 Corpus Christi 灣區博物館艦，綽號「藍色幽靈」。"},
+  STAR:{name:"SpaceX Starbase (Boca Chica)",lat:25.9972,lng:-97.1566,type:"exp",badge:"5",
+       intro:"SpaceX 位於德州最南端 Boca Chica 的 Starship 巨型火箭研發與發射基地，緊鄰墨西哥邊界。"},
+  SPACEPORT:{name:"Houston Spaceport (Ellington)",lat:29.6090,lng:-95.1590,type:"city",badge:"6",
+       intro:"設於 Ellington 機場，是美國最早一批取得 FAA 認證的商業太空港之一；含飛行模擬器實作。"},
+  HMNS:{name:"HMNS 自然科學博物館 / Challenger Center",lat:29.7221,lng:-95.3896,type:"city",badge:"7",
+       intro:"休士頓自然科學博物館（含知名古生物廳）；館內 Challenger Learning Center 紀念挑戰者號機組，提供模擬太空任務體驗。"},
+};
+
+const DAYS = [
+ {d:1,date:"7/11 六",loc:"HOTEL",ttl:"抵達休士頓 Arrival",theme:"",
+  acts:"HASSE 接機、入住報到；迎新簡報＋安全說明",leg:"IAH → 飯店 · 54 km · 約 48 min",exp:false},
+ {d:2,date:"7/12 日",loc:"JSC",ttl:"進駐 NASA 營地",theme:"What Is Your Dream?",
+  acts:"開幕式；13:30 抵營、裝備檢查、營區導覽；任務簡報",leg:"飯店 → NASA 營地 · 65 km · 約 52 min",exp:false},
+ {d:3,date:"7/13 一",loc:"JSC",ttl:"Space U Odyssey",theme:"Teamwork",
+  acts:"火箭工程、月面導航；精準專注訓練；EVA 團隊任務（攀岩＋高空繩索＋滑索）",leg:"NASA 營地（住宿中）",exp:false},
+ {d:4,date:"7/14 二",loc:"JSC",ttl:"Space U Odyssey",theme:"Breakthrough",
+  acts:"水域訓練、異地求生；Capsule Drop 返回艙工程挑戰",leg:"NASA 營地（住宿中）",exp:false},
+ {d:5,date:"7/15 三",loc:"JSC",ttl:"Space U Odyssey",theme:"Nothing Is Impossible",
+  acts:"火箭發射回收＋飛後數據；月面導航進階；太空營養、Pack for the Moon",leg:"NASA 營地（住宿中）",exp:false},
+ {d:6,date:"7/16 四",loc:"JSC",ttl:"NASA JSC／SCH",theme:"Passion",
+  acts:"深入 JSC＋Space Center Houston；機器人工作坊；NASA 講者互動；Starship Gallery",leg:"NASA 營地（住宿中）",exp:false},
+ {d:7,date:"7/17 五",loc:"IFLY",ttl:"結營＋iFLY 失重體驗",theme:"Vision",
+  acts:"頒 NASA Space U 證書；11–14 時離營；iFLY 室內漂浮＋STEM 物理",leg:"營地 → iFLY 61 km → 飯店 7 km · 約 57 min",exp:false},
+ {d:8,date:"7/18 六",loc:"UH",ttl:"休士頓大學 SICSA 太空建築",theme:"Life Is What You Make It",
+  acts:"晨間 Quiz；參訪 SICSA；太空棲息地（Space Habitat）設計",leg:"飯店 → UH · 28 km · 約 29 min",exp:false},
+ {d:9,date:"7/19 日",loc:"STAR",ttl:"SpaceX Starbase 全日遠征",theme:"",
+  acts:"07:07 出發；中午 USS Lexington 航艦；下午 SpaceX Starbase；23:59 返抵",leg:"飯店→Corpus→Boca Chica→飯店 · 共 1,207 km · 開車約 15 h",exp:true},
+ {d:10,date:"7/20 一",loc:"SPACEPORT",ttl:"Houston Spaceport＋飛行模擬",theme:"Curiosity & Imagination",
+  acts:"晨間 Quiz；休士頓太空港參訪；飛行模擬器（起飛／操控／降落）",leg:"飯店 → 太空港 · 57 km · 約 52 min",exp:false},
+ {d:11,date:"7/21 二",loc:"HMNS",ttl:"Challenger Full Mission＋HMNS",theme:"Perseverance",
+  acts:"晨間 Quiz；Challenger Center 全任務模擬（地球→月→火星）；HMNS 古生物廳",leg:"飯店 → HMNS · 25 km · 約 23 min",exp:false},
+ {d:12,date:"7/22 三",loc:"IAH",ttl:"畢業典禮與賦歸",theme:"Have a Giant Goal and Believe in It",
+  acts:"晨間 Quiz；14:00 畢業典禮頒證書；16:00 前結束、送機。7/23 01:00 BR51 → 7/24 06:30 抵桃園",leg:"飯店 → IAH 送機 · 54 km",exp:false},
+];
+
+const LEGS = [
+ ["IAH","HOTEL","city"],["HOTEL","JSC","city"],["JSC","IFLY","city"],["IFLY","HOTEL","city"],
+ ["HOTEL","UH","city"],["HOTEL","LEX","exp"],["LEX","STAR","exp"],["STAR","HOTEL","exp"],
+ ["HOTEL","SPACEPORT","city"],["HOTEL","HMNS","city"],["HOTEL","IAH","city"],
+];
+
+const COLOR={air:"#6b7793",stay:"#0f9d6b",city:"#1a73e8",exp:"#d93939"};
+
+const map = L.map('map',{zoomControl:true,attributionControl:true});
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
+  attribution:'&copy; OpenStreetMap &copy; CARTO',subdomains:'abcd',maxZoom:19
+}).addTo(map);
+
+// flight line TPE-IAH (dashed)
+L.polyline([[L_.TPE.lat,L_.TPE.lng],[L_.IAH.lat,L_.IAH.lng]],
+  {color:'#1a73e8',weight:2.5,dashArray:'8 8',opacity:.65}).addTo(map);
+
+// ground legs
+LEGS.forEach(([a,b,k])=>{
+  L.polyline([[L_[a].lat,L_[a].lng],[L_[b].lat,L_[b].lng]],
+    {color:k==='exp'?'#d93939':'#e8710a',weight:k==='exp'?4:3.5,opacity:.9}).addTo(map);
+});
+
+const markers={};
+Object.entries(L_).forEach(([key,p])=>{
+  const c=COLOR[p.type];
+  const size=p.type==='city'||p.type==='exp'?30:26;
+  const icon=L.divIcon({className:'',html:`<div class="mk" style="width:${size}px;height:${size}px;background:${c}">${p.badge}</div>`,iconSize:[size,size],iconAnchor:[size/2,size/2]});
+  const days=DAYS.filter(d=>d.loc===key).map(d=>'Day '+d.d).join('、');
+  const acts=DAYS.filter(d=>d.loc===key).map(d=>d.acts).join('；');
+  const html=`<div class="pop"><div class="pn">${p.badge==='✈'||p.badge==='🏨'?p.badge+' ':'#'+p.badge+' '}${p.name}</div>`+
+    (days?`<div class="pd">${days}</div>`:'')+
+    `<div class="pi">${p.intro}</div>`+
+    (acts?`<div class="pa">🛰 ${acts}</div>`:'')+`</div>`;
+  const m=L.marker([p.lat,p.lng],{icon}).bindPopup(html).addTo(map);
+  markers[key]=m;
+});
+
+const cityKeys=["IAH","HOTEL","JSC","IFLY","UH","SPACEPORT","HMNS"];
+const allKeys=["IAH","HOTEL","JSC","IFLY","UH","SPACEPORT","HMNS","LEX","STAR"];
+function bounds(keys){return L.latLngBounds(keys.map(k=>[L_[k].lat,L_[k].lng]));}
+function setView(which){
+  document.querySelectorAll('.views button').forEach(b=>b.classList.remove('on'));
+  if(which==='city'){map.fitBounds(bounds(cityKeys),{padding:[40,40]});document.getElementById('vCity').classList.add('on');}
+  if(which==='all'){map.fitBounds(bounds(allKeys),{padding:[40,40]});document.getElementById('vAll').classList.add('on');}
+  if(which==='fly'){map.fitBounds(bounds(["TPE","IAH"]),{padding:[50,50]});document.getElementById('vFly').classList.add('on');}
+}
+document.getElementById('vCity').onclick=()=>setView('city');
+document.getElementById('vAll').onclick=()=>setView('all');
+document.getElementById('vFly').onclick=()=>setView('fly');
+
+const dl=document.getElementById('daylist');
+DAYS.forEach(d=>{
+  const el=document.createElement('div');
+  el.className='day'+(d.exp?' exp':'');
+  el.innerHTML=`<div class="top"><span class="dno">DAY ${d.d}</span><span class="date">${d.date}</span></div>`+
+    `<div class="ttl">${d.ttl}</div>`+
+    (d.theme?`<div class="theme">「${d.theme}」</div>`:'')+
+    `<div class="acts">${d.acts}</div>`+
+    `<div class="leg">📍 ${d.leg}</div>`;
+  el.onclick=()=>{const p=L_[d.loc];map.flyTo([p.lat,p.lng],d.exp?9:12,{duration:.8});setTimeout(()=>markers[d.loc].openPopup(),650);};
+  dl.appendChild(el);
+});
+
+const _v=new URLSearchParams(location.search).get('v');
+setView(_v==='all'||_v==='fly'?_v:'city');
+</script>
+</body>
+</html>
