@@ -159,7 +159,7 @@ const baseMap = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyag
   attribution:'&copy; OpenStreetMap &copy; CARTO',subdomains:'abcd',maxZoom:20
 }).addTo(map);
 const baseSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
-  attribution:'Imagery &copy; Esri, Maxar, Earthstar Geographics',maxZoom:20
+  attribution:'Imagery &copy; Esri, Maxar, Earthstar Geographics',maxZoom:20,maxNativeZoom:19
 });
 const satLabels = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20});
 const satellite = L.layerGroup([baseSat,satLabels]);
@@ -187,8 +187,9 @@ Object.entries(L_).forEach(([key,p])=>{
   const c=COLOR[p.type];
   const size=p.type==='city'||p.type==='exp'?30:26;
   const icon=L.divIcon({className:'',html:`<div class="mk" style="width:${size}px;height:${size}px;background:${c}">${p.badge}</div>`,iconSize:[size,size],iconAnchor:[size/2,size/2]});
-  const days=DAYS.filter(d=>d.loc===key).map(d=>'Day '+d.d).join('、');
-  const acts=DAYS.filter(d=>d.loc===key).map(d=>d.acts).join('；');
+  const ds=DAYS.filter(d=>d.loc===key);
+  const days=ds.map(d=>'Day '+d.d).join('、');
+  const acts=ds.map(d=>d.acts).join('；');
   const html=`<div class="pop"><div class="pn">${p.badge==='✈'||p.badge==='🏨'?p.badge+' ':'#'+p.badge+' '}${p.name}</div>`+
     (days?`<div class="pd">${days}</div>`:'')+
     `<div class="pi">${p.intro}</div>`+
@@ -201,15 +202,19 @@ Object.entries(L_).forEach(([key,p])=>{
 const cityKeys=["IAH","HOTEL","JSC","IFLY","UH","SPACEPORT","HMNS"];
 const allKeys=["IAH","HOTEL","JSC","IFLY","UH","SPACEPORT","HMNS","LEX","STAR"];
 function bounds(keys){return L.latLngBounds(keys.map(k=>[L_[k].lat,L_[k].lng]));}
+const VIEWS={
+  city:{keys:cityKeys,btn:'vCity',pad:[40,40]},
+  all:{keys:allKeys,btn:'vAll',pad:[40,40]},
+  fly:{keys:["TPE","IAH"],btn:'vFly',pad:[50,50]},
+};
 function setView(which){
+  const v=VIEWS[which];
+  if(!v) return;
   document.querySelectorAll('.views button').forEach(b=>b.classList.remove('on'));
-  if(which==='city'){map.fitBounds(bounds(cityKeys),{padding:[40,40]});document.getElementById('vCity').classList.add('on');}
-  if(which==='all'){map.fitBounds(bounds(allKeys),{padding:[40,40]});document.getElementById('vAll').classList.add('on');}
-  if(which==='fly'){map.fitBounds(bounds(["TPE","IAH"]),{padding:[50,50]});document.getElementById('vFly').classList.add('on');}
+  map.fitBounds(bounds(v.keys),{padding:v.pad});
+  document.getElementById(v.btn).classList.add('on');
 }
-document.getElementById('vCity').onclick=()=>setView('city');
-document.getElementById('vAll').onclick=()=>setView('all');
-document.getElementById('vFly').onclick=()=>setView('fly');
+Object.keys(VIEWS).forEach(k=>{document.getElementById(VIEWS[k].btn).onclick=()=>setView(k);});
 
 const dl=document.getElementById('daylist');
 DAYS.forEach(d=>{
@@ -220,7 +225,7 @@ DAYS.forEach(d=>{
     (d.theme?`<div class="theme">「${d.theme}」</div>`:'')+
     `<div class="acts">${d.acts}</div>`+
     `<div class="leg">📍 ${d.leg}</div>`;
-  el.onclick=()=>{const p=L_[d.loc];map.flyTo([p.lat,p.lng],d.exp?9:12,{duration:.8});setTimeout(()=>markers[d.loc].openPopup(),650);};
+  el.onclick=()=>{const p=L_[d.loc];map.once('moveend',()=>markers[d.loc].openPopup());map.flyTo([p.lat,p.lng],d.exp?9:12,{duration:.8});};
   dl.appendChild(el);
 });
 
